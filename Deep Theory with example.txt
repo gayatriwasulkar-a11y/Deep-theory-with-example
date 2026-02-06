@@ -1,0 +1,312 @@
+*Hidden Classes (also called "Shapes" or "Maps" in V8's source code) are the mechanism V8 uses to implement fast property access on JavaScript objects. They are the foundation upon which all the optimizing compilers build their optimizations.
+When you create an object, V8 creates a hidden class for it behind the scenes. This hidden class 
+stores meta-information about the object's shape, specifically the layout of its properties.
+v8 assign internal "shapes" to object to track their property layout. this transforms show
+dictionary-style property lookups into fast, fixed-offset memory accesses.
+
+compilation pipeline
+parsing, interpreter, baseline compiler, Mid-tier compiler, optimizing compiler.
+
+The Execution Context is the environment where code is evaluated and executed. 
+The Call Stack (or Execution Stack) is the mechanism used by the engine to manage these contexts in a Last-In-First-Out (LIFO) order.
+
+1.Creation:-(Memory Allocation)
+Before any code runs, the JS engine sets up the environment in a phase often called Hoisting. 
+.Memory Setup: The engine scans the code and allocates memory for variables and functions.
+.Variable Declarations: Variables declared with var are stored and initialized with a placeholder value of undefined. Variables with let and const are hoisted but remain uninitialized, staying in a Temporal Dead Zone (TDZ).
+.Function Declarations: The entire function definition is stored in memory, allowing you to call functions before they are defined in the script.
+.Special Objects: The Global Object (e.g., window in browsers) and the this keyword are created.
+
+2.Execution:-(Code Run)
+The engine executes the code line-by-line. 
+.Variable Assignment: Real values are assigned to variables that were previously undefined or uninitialized.
+.Function Invocation: When a function is called, a brand-new Function Execution Context (FEC) is created.
+.Stacking: This new FEC is pushed onto the top of the Call Stack. The engine pauses the current context and focuses on the one at the top.
+
+3.Teardown:- (Cleanup)
+Once a function finishes its task (usually via a return statement or by reaching the last line).
+.Popping the Stack: The current execution context is popped off the Call Stack.
+.Memory Deletion: The engine destroys the local context and clears its memory.
+.Control Return: Control flow returns to the execution context immediately below it in the stack.
+.Final End: When the entire script is finished, the Global Execution Context is popped, leaving the call stack empty.
+
+*Garbage Collection (GC) Basics:-
+JavaScript uses automatic Garbage Collection to reclaim memory that is no longer needed. The primary goal is to identify reachability—if an object can be reached from the "root" (the global object or currently executing function), it is kept; otherwise, it's deleted.
+
+*Stack Storage: When you declare a primitive, its value is stored directly on the stack. For objects, the stack only stores a pointer (the memory address) to where the actual data lives in the heap.
+Static allocation Fixed size determined at compile time.
+
+
+*Heap Storage: Because objects can grow or shrink, they are placed in the heap, a large unstructured memory area.
+Dynamic allocation Size can change at runtime.
+
+1. Primitives vs. Reference Types:-In JavaScript, the way data is stored and passed around depends entirely on whether it’s a Primitive or a Reference type.
+
+.Primitives: Includes Number, String, Boolean, null, undefined, Symbol, and BigInt. These are immutable and stored directly on the Stack.
+.Reference Types: Includes Object, Array, and Function. These are mutable and stored in the Heap, with only a pointer (memory address) stored on the Stack.
+
+2. Pass-by-Sharing (The Hybrid Reality):-JavaScript is technically Pass-by-Value, but for objects, that "value" is actually a reference. This behavior is often called Pass-by-Sharing.
+
+1.Variable Hoisting with var:-
+When you use var to declare a variable, the declaration is hoisted to the top, but its value is not assigned until the code execution reaches the variable’s initialization. This results in the variable being assigned undefined during the hoisting phase.
+ex:     console.log(a); // undefined
+         var a = 5; 
+
+
+2.Variable Hoisting with let and const:-
+Unlike var, let and const are also hoisted, but they remain in a Temporal Dead Zone (TDZ) from the start of the block until their declaration is encountered. Accessing them before their declaration will throw a ReferenceError.
+ex:    console.log(b); // ReferenceError: Cannot access 'b' before initialization
+       let b = 10;
+
+*Strict mode is a subset of JavaScript that provides better error checking and enforces stricter rules for coding. When strict mode is enabled, the JavaScript engine checks for syntax errors and runtime errors that would otherwise go unnoticed in non-strict mode. This makes it easier for developers to catch errors early in the development process, resulting in fewer bugs and better code quality.
+
+.Variable declaration: In strict mode, variables must be declared before they can be used. This prevents developers from accidentally creating global variables, which can cause naming conflicts and make code harder to maintain. 
+.Function invocation: In strict mode, however, this keyword is undefined in such cases. This helps prevent accidental modification of the global object and makes it easier to write secure code.
+.Function arguments: Strict mode disallows this, making it easier to write and maintain code.
+.Deleting properties: In strict mode, attempting to delete non-configurable properties will result in an error.
+
+1. The Lexical Environment
+A Lexical Environment is created every time an execution context is formed. It consists of two parts:
+.Environment Record:- The actual "map" where local variables and function declarations are stored.
+.Outer Reference:- A pointer to the parent Lexical Environment. This is what enables the "Lexical" nature of JS—functions remember where they were physically written in the code, not where they are called.
+
+Q.1)
+ANS:-
+1.console.log(a)
+greet()
+function greet()
+{
+    console.log("Good Morning")
+}
+
+var a=9;
+console.log(a)
+
+2.console.log(typeof test);
+
+var test = "Hello";
+function test() {}
+
+console.log(typeof test); 
+
+3.greet();
+
+function greet() {
+  console.log("Hi all of you");
+}
+
+4.console.log(a);
+var a = "Hello";
+console.log(a);
+
+5.try {
+  console.log(b); 
+} catch (e) {
+  console.log(e.name);
+}
+let b = "Hello";
+
+6.try {
+  Hi(); 
+} catch (e) {
+  console.log(e.name);
+}
+
+var Hi = function() {
+  console.log("Hello");
+};
+
+7.try {
+  shout();
+} catch (g) {
+  console.log(g.name);
+}
+const shout = () => console.log("Hello");
+
+8.{
+  console.log(a);
+  var a = 5;
+}
+console.log(a); 
+
+9.var a = 1;
+var a = 2;
+
+console.log(a);
+
+10.var a;
+console.log(a);
+a = 10;
+
+Q.3)
+ANS:-
+function a() {
+  console.trace("a");
+}
+function b() {
+  console.trace("b");
+}
+function abc() {
+  console.trace("abc called");
+}
+
+Q.2)
+ANS:-
+let userA = { name: "Gayatri", active: true };
+
+let userB = userA; 
+
+console.log("This is table");
+console.log("Before:", { userA, userB });
+
+userB.name = "Vidya";
+console.log("After:", { userA, userB }); 
+console.log("It is same memory address?", userA == userB); 
+
+userB = { name: "Parth", active: false };
+
+console.log("Final table");
+console.log("UserA (Table 1):", userA.name); 
+console.log("UserB (Table 2):", userB.name); 
+console.log("Memory is full?", userA == userB); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
