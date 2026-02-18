@@ -1,0 +1,472 @@
+1.Putting JS fundamentals together:-
+Putting JavaScript fundamentals together means combining core concepts—variables, functions, control flow, arrays, objects, and DOM manipulation—into practical, working code.
+Putting JavaScript fundamentals together means combining the basic concepts you’ve learned into a complete, working program instead of using them separately.
+Think of it like this:
+Variables store data →
+Functions process data →
+Conditionals make decisions →
+Loops repeat actions →
+Objects/arrays organize data →
+DOM/events make it interactive
+example:-
+let users = [
+  { name: "Gayatri", age: 22 },
+  { name: "Vidya", age: 15 },
+  { name: "Parth", age: 30 }
+];
+function checkAdults(userList) {
+  for (let i = 0; i < userList.length; i++) {
+    if (userList[i].age >= 18) {
+      console.log(userList[i].name + " is an adult");
+    }
+  }
+}
+checkAdults(users);
+
+2.Architecting a pure JavaScript application:-
+Architecting a pure JavaScript application means Designing a structured system where data, logic, UI, and events are separated and organized in a predictable way — without using external frameworks.
+Architecting a pure JavaScript application are designing and organizing your code so it is clean, scalable, and maintainable — without using frameworks like React or Vue.
+
+3.Optimizing loops, rendering, data flow:-
+Optimizing loops, rendering, and data flow in JavaScript is about reducing unnecessary work, minimizing re-computation, and controlling when and how updates propagate through your system.
+-Optimizing loops can improve the performance of your JavaScript code by reducing the number of iterations. This can be achieved by breaking out of the loop early or 
+by using a more efficient loop structure.
+-Optimizing rendering in web applications is crucial for improving load times and ensuring a smooth user experience. The Performance API in JavaScript provides various methods to measure 
+the time it takes for various parts of your application to load and render. With these insights, you can finetune your application to be more responsive and efficient.
+-Data flow determines the information regarding the definition and use of data in a program. With the help of this analysis, optimization can be done. In general, its process in 
+which values are computed using data flow. The data flow property represents information that can be used for optimization.
+
+4.LocalStorage/SessionStorage patterns:-
+-Local Storage allows websites to store key-value pairs persistently in a user’s browser, even after the browser is closed and reopened. Similar to sessionStorage, except that 
+SessionStorage data is cleared when the tab or browser window is closed, but it persists through page reloads. In private browsing (incognito) mode, localStorage behavior varies across browsers. 
+In most cases, data is automatically deleted once the session ends.
+-Session Storage is a temporary storage feature in web browsers that saves data only while a tab is open. It allows web pages to store information that remains available even if the page is refreshed. 
+However, once the tab or browser is closed, all stored data is automatically deleted. Unlike localStorage, which keeps data permanently until manually cleared, sessionStorage is designed for 
+short-term use. It is useful for storing temporary data like user preferences, form inputs, or session-based authentication details that should not persist beyond the current browsing session.
+
+5.Build Todo App with persistent storage:-
+-HTML Code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>To-Do List App</h1>
+    <input id="task-input" type="text" placeholder="Add task">
+    <button id="add-task-btn">Add Task</button>
+    <ul id="task-list"></ul>
+    <script src="script.js"></script>
+</body>
+</html>
+
+-Javascript code
+const taskInput = document.getElementById('task-input');
+const addTaskBtn = document.getElementById('add-task-btn');
+const taskList = document.getElementById('task-list');
+
+let tasks = [];
+
+addTaskBtn.addEventListener('click', addTask);
+
+function addTask() {
+    const taskText = taskInput.value.trim();
+    if (taskText !== '') {
+        const task = {
+            text: taskText,
+            completed: false
+        };
+        tasks.push(task);
+        renderTaskList();
+        taskInput.value = '';
+    }
+}
+
+function renderTaskList() {
+    const taskListHtml = tasks.map((task, index) => {
+        return `
+            <li>
+                <input type="checkbox" ${task.completed ? 'checked' : ''}>
+                <span>${task.text}</span>
+                <button class="delete-btn">Delete</button>
+            </li>
+        `;
+    }).join('');
+    taskList.innerHTML = taskListHtml;
+}
+
+taskList.addEventListener('click', (event) => {
+    if (event.target.tagName === 'INPUT') {
+        const taskIndex = tasks.findIndex((task) => task.text === event.target.parentNode.querySelector('span').textContent);
+        if (taskIndex !== -1) {
+            tasks[taskIndex].completed = event.target.checked;
+            renderTaskList();
+        }
+    } else if (event.target.tagName === 'BUTTON') {
+        const taskIndex = tasks.findIndex((task) => task.text === event.target.parentNode.querySelector('span').textContent);
+        if (taskIndex !== -1) {
+            tasks.splice(taskIndex, 1);
+            renderTaskList();
+        }
+    }
+});
+
+
+6.Implement search filtering + sorting:-
+-HTML Code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sort and filter list</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <h1>filtering and sorting list item</h1>
+    <div class="container">
+        <input id="searchInput" type="text" placeholder="search item..."/>
+        <button type="sortButton">Sort Alphabetically</button>
+        <ul id="list">
+            <li class="listItem">Gayatri</li>
+            <li class="listItem">Vidya</li>
+            <li class="listItem">Shantanu</li>
+            <li class="listItem">Parth</li>
+            <li class="listItem">Varsha</li>
+            <li class="listItem">Om</li>
+        </ul>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+-CSS code:-
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f1f1;
+        }
+h1{
+    text-align: center;
+}
+ .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+ input {
+            margin-bottom: 20px;
+            padding: 10px;
+            width: calc(100% - 20px);
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+button{
+    padding: 10px;
+            margin: 5px 0;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+}
+ #list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+.listItem {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+.listItem:hover {
+            background-color: #e9e9e9;
+        }
+.hidden {
+            display: none;
+        }
+
+-Javascript Code:-
+const filterInput =
+            document.getElementById('filterInput');
+        const listItems =
+            document.querySelectorAll('.listItem');
+
+        filterInput.addEventListener('input', function () {
+            const filterValue = filterInput.value.toLowerCase();
+            listItems.forEach(function (item) {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(filterValue)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        });
+
+
+
+7.Using Advanced Features:-
+class Task {
+  constructor(title, priority = "LOW", dueDate = null) {
+    this.id = Date.now();
+    this.title = title;
+    this.priority = priority; 
+    this.status = "PENDING"; 
+    this.dueDate = dueDate ? new Date(dueDate) : null;
+    this.active = true; 
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
+  }
+
+  update(data) {
+    Object.assign(this, data);
+    this.updatedAt = new Date();
+  }
+
+  softDelete() {
+    this.active = false;
+    this.updatedAt = new Date();
+  }
+}
+
+class TaskManager {
+  constructor() {
+    this.tasks = [];
+  }
+
+  addTask(title, priority, dueDate) {
+    const task = new Task(title, priority, dueDate);
+    this.tasks.push(task);
+    return task;
+  }
+
+  searchByTitle(keyword) {
+    return this.tasks.filter(
+      task =>
+        task.active &&
+        task.title.toLowerCase().includes(keyword.toLowerCase())
+    );
+  }
+
+  filterByStatus(status) {
+    return this.tasks.filter(
+      task => task.active && task.status === status
+    );
+  }
+
+  filterByPriority(priority) {
+    return this.tasks.filter(
+      task => task.active && task.priority === priority
+    );
+  }
+
+  getActiveTasks() {
+    return this.tasks.filter(task => task.active);
+  }
+
+  getInactiveTasks() {
+    return this.tasks.filter(task => !task.active);
+  }
+}
+//example
+const manager = new TaskManager();
+
+manager.addTask("Finish report", "HIGH", "2026-02-25");
+manager.addTask("Buy Books", "LOW", "2026-02-20");
+manager.addTask("Prepare presentation", "MEDIUM", "2026-02-22");
+
+manager.tasks[0].update({ status: "COMPLETED" });
+
+manager.tasks[1].softDelete();
+
+console.log("Search 'report':", manager.searchByTitle("report"));
+console.log("Completed tasks:", manager.filterByStatus("COMPLETED"));
+console.log("High priority tasks:", manager.filterByPriority("HIGH"));
+console.log("Active tasks:", manager.getActiveTasks());
+console.log("Inactive tasks:", manager.getInactiveTasks());
+
+
+8.Core Features:-
+HTML Code-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Home</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <input type="text" placeholder="Add a new task...">
+        <button>Add</button>
+        <div id="task-list"></div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
+
+CSS Code-
+body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f06, #4a90e2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        input[type="text"] {
+            width: calc(100% - 100px);
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            margin-right: 1rem;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: none;
+            background: #ff6b6b;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background0.3s;
+        }
+        button:hover {
+            background: #ff4757;
+        }
+        .todo {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background0.3s;
+        }
+        .todo:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .task {
+            flex: 1;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .delete,
+        .edit {
+            cursor: pointer;
+            transition: transform 0.2s, color 0.3s;
+        }
+        .delete:hover {
+            transform: scale(1.1);
+            color: #ff4757;
+        }
+        .edit:hover {
+            transform: scale(1.1);
+            color: #1e90ff;
+        }
+        svg {
+            fill: currentColor;
+        }
+
+Javascript Code-
+let inputs = document.querySelector('input');
+        let btn = document.querySelector('button');
+        let taskList = document.getElementById('task-list');
+        let task = [];
+        let localstoragedata = localStorage.getItem("task array");
+        if (localstoragedata != null) {
+            let ogdata = JSON.parse(localstoragedata);
+            task = ogdata;
+            maketodo();
+        }
+        btn.addEventListener("click", function () {
+            let query = inputs.value;
+            inputs.value = "";
+            if (query.trim() === "") {
+                alert("no value entered");
+                throw new Error("empty input field error");
+            }
+            let taskObj = {
+                id: Date.now(),
+                text: query
+            }
+            task.push(taskObj);
+            localStorage.setItem("task array", JSON.stringify(task));
+            maketodo();
+        });
+        function maketodo() {
+            taskList.innerHTML = "";
+            for (let i = 0; i < task.length; i++) {
+                let { id, text } = task[i];
+                let element = document.createElement('div');
+           element.innerHTML = `
+                    <span class="task" contenteditable="false">${text}</span>
+                    <button class='edit'>Edit</button>
+                    <span class="delete"><svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM13.4142 
+                    13.9997L15.182 15.7675L13.7678 17.1817L12 15.4139L10.2322 17.1817L8.81802 15.7675L10.5858 13.9997L8.81802 12.232L10.2322 10.8178L12 12.5855L13.7678 10.8178L15.182 12.232L13.4142 13.9997ZM9 
+                    4V6H15V4H9Z"></path></svg></span>`;
+                    
+                let delbtn = element.querySelector('.delete');
+                let editbtn = element.querySelector('.edit');
+                let taskText = element.querySelector('.task');
+                delbtn.addEventListener("click", function () {
+                    let filteredarray = task.filter(function (taskobj) {
+                        return taskobj.id != id;
+                    });
+                    task = filteredarray;
+                    localStorage.setItem("task array", JSON.stringify(task));
+                    taskList.removeChild(element);
+                });
+                editbtn.addEventListener("click", function () {
+                    if (editbtn.innerText === 'Edit') {
+                        taskText.setAttribute('contenteditable', 'true'); 
+                        taskText.focus(); 
+                        editbtn.innerText = 'Save'; 
+                    } else {
+                        taskText.setAttribute('contenteditable', 'false');
+                        let updatedText = taskText.innerText.trim();
+                        if (updatedText !== "") {
+                            task = task.map(function (taskobj) {
+                                if (taskobj.id === id) {
+                                    taskobj.text = updatedText;
+                                }
+                                return taskobj;
+                            });
+                            localStorage.setItem("task array", JSON.stringify(task));
+                        }
+                        editbtn.innerText = 'Edit'; 
+                    }
+                });
+                element.classList.add('todo');
+                taskList.appendChild(element);
+            }
+        }
