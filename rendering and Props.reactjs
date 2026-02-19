@@ -313,8 +313,8 @@ function UserProfile({ name, age, isMember }) {
 export default function App() {
   return (
     <UserProfile 
-      name="Alice" 
-      age={28} 
+      name="Gayatri" 
+      age={25} 
       isMember={true} 
     />
   );
@@ -329,12 +329,12 @@ describe("Rendering Behavior Tests", () => {
 
   test("renders correct name", () => {
     render(<App />);
-    expect(screen.getByText("Hello, Alice")).toBeInTheDocument();
+    expect(screen.getByText("Hello, Gayatri")).toBeInTheDocument();
   });
 
   test("renders correct age", () => {
     render(<App />);
-    expect(screen.getByText("Age: 28")).toBeInTheDocument();
+    expect(screen.getByText("Age: 25")).toBeInTheDocument();
   });
 
   test("renders Premium Member when isMember is true", () => {
