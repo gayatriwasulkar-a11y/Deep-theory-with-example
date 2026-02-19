@@ -1,0 +1,348 @@
+1.React architecture: rendering engine, reconciliation algorithm:-
+React's rendering system is one of the most sophisticated pieces of modern JavaScript. Understanding how it works is crucial for writing performant applications and debugging subtle issues. 
+Yet many developers use React for years without understanding these internals.
+This guide pulls back the curtain on React's rendering engine, explaining the virtual DOM, the reconciliation algorithm, Fiber architecture, and how React 18's concurrent rendering transforms the game.
+Reconciliation is how React figures out which parts changed between two virtual DOMs.
+Key Insight: The Diff Algorithm
+React can't just compare two VDOM trees element-by-element (would be O(n³)).
+Instead, React uses heuristics (assumptions) that work for real UIs:
+-Same type elements have same children
+-Elements with keys maintain identity across renders
+-Most UI changes are local (not global restructuring)
+
+2.JSX compilation under the hood (Babel):-
+When building modern web applications, JSX and Babel play critical roles in transforming our code into something browsers can understand. JSX, or JavaScript XML, allows us to write 
+HTML-like syntax directly inside JavaScript, making UI development intuitive. However, browsers do not understand JSX natively, and that’s where Babel, a JavaScript compiler, comes in.
+In this article, we’ll explore how Babel compiles JSX, understand its pipeline, and set up a simple project to see the process in action. We’ll also verify the output in both the browser 
+UI and console for clarity.
+The compilation of JSX through Babel happens in three main steps:
+-Parsing: Babel parses the code into an Abstract Syntax Tree (AST), which represents the code structure.
+-Transforming: The AST is then passed through various transformations. The JSX transform plugin converts JSX into React.createElement calls.
+-Generating: Finally, Babel generates the transformed code into plain JavaScript.
+
+3.Functional components vs Class components:-
+Functional Components
+A functional component is a simpler way to define components in React using JavaScript functions. Unlike class components, functional components 
+do not require a constructor or lifecycle methods. They are typically used for components that are presentational and do not manage complex state or lifecycle events.
+Syntax:-
+const Car=()=> {
+      return <h2>Hi, I am also a Car!</h2>;
+}
+
+Class Component
+A class component is one of the two ways to define components in React, the other being functional components. Class components are ES6 classes that extend React.Component 
+and can hold and manage internal state.
+Syntax:-
+class Car extends React.Component {
+      render() {
+        return <h2>Hi, I am a Car!</h2>;
+      }
+}
+
+4.Props immutability concept:-
+In React, props (short for properties) are used to pass data from a parent component to a child component. Props are immutable and cannot be directly modified by the component that receives them. 
+This immutability is a core concept in React for the following reasons:
+1. Unidirectional Data Flow
+React follows a unidirectional data flow principle, meaning data flows from parent to child components via props. This ensures that the state of an application is predictable and traceable. 
+When props are immutable, it prevents child components from directly altering the data passed down from their parent, preserving the flow of data in one direction.
+2. Separation of Concerns
+Props are designed to allow the parent component to control the data, while the child component focuses on presentation and behavior. If child components could modify props, it would lead to tightly 
+coupled components and make it more difficult to track the state of the application, leading to bugs and maintenance challenges.
+3. State Management in React
+Props are used to pass data down from a parent component, while state is used to manage data that can change within a component. The only way to update a component’s state is through the setState function 
+(for class components) or the useState hook (for function components). React recommends that you manage state inside components where changes occur and pass that state down to children as props.
+4. Props Are Immutable to Ensure Consistency
+If props were mutable, there could be inconsistent states across different components. For example, if a child component could update its own props, it could cause unexpected re-renders or lead to bugs, 
+as React wouldn't be able to properly manage changes to the UI in an optimal way.
+example:-
+function Parent() {
+  const [name, setName] = useState("Gayatri");
+
+  return (
+    <div>
+      <button onClick={() => setName("Doe")}>Change Name</button>
+      <Child name={name} />
+    </div>
+  );
+}
+function Child({ name }) {
+  const [localState, setLocalState] = useState(name);
+
+  useEffect(() => {
+    setLocalState(name); 
+  }, [name]);
+
+  return <h1>{localState}</h1>;
+}
+
+5.State vs Props deep clarity:-
+In React, the State of a component refers to the data held or stored within that component which it can manipulate or adjust in order to change it's appearance on the screen. 
+i.e Data owned and manipulated by the component.State represents data that belongs to a component and can change over time. It’s the component’s private memory that triggers re-renders 
+when updated. With hooks, we primarily use useState for local component state
+Props are data passed into a component from outside, usually from a parent component, which is aimed at adjusting the characteristics of the component. i.e Data given to a component 
+to make it behave or appear a certain way.
+In this case, it's very clear that Props are not supposed to be modified by the component which receives them. They're in fact read-only and should not be modified.
+Props (properties) are React’s way of passing data from parent to child components. Think of them as function arguments for your components. Once a prop is passed down, 
+the receiving component can read it but cannot modify it directly.
+
+6.Component lifecycle simplified in function components:-
+A functional component in React is simply a JavaScript function that returns JSX (React’s HTML-like syntax). Unlike class components, functional components are simpler 
+and do not use this or lifecycle methods directly.
+example:-
+import React, { useEffect } from 'react';
+function ExampleComponent() {
+  useEffect(() => {
+    console.log('Function Component');
+  }, []);
+
+  return <h1>Hello, React!</h1>;
+}
+
+7.Create reusable UI components (Button, Card, Layout):-
+App.js
+import React from "react";
+import "./style.css";
+import Layout from "./Layout.js";
+import Card from "./Card.js";
+import Button from "./Button.js";
+
+export default function App() {
+  return (
+    <Layout>
+      <Card title="Welcome">
+        <p>This is a reusable Card component.</p>
+        <Button type="primary">Primary Button</Button>
+        <Button type="secondary">Secondary Button</Button>
+      </Card>
+    </Layout>
+  );
+}
+
+style.css
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+}
+.header,
+.footer {
+  background: #222;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+.main {
+  flex: 1;
+  padding: 20px;
+  background: #f4f4f4;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: auto;
+}
+.btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+.btn:hover {
+  opacity: 0.9;
+}
+
+card.js
+import React from "react";
+import "./styles.css";
+
+export default function Card({ title, children }) {
+  return (
+    <div className="card">
+      {title && <h3>{title}</h3>}
+      <div>{children}</div>
+    </div>
+  );
+}
+
+button.js
+import React from "react";
+import "./styles.css";
+
+export default function Button({ children, type = "primary", onClick }) {
+  return (
+    <button className={`btn btn-${type}`} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+Layout.js
+import React from "react";
+import "./styles.css";
+
+export default function Layout({ children }) {
+  return (
+    <div className="layout">
+      <header className="header">My App</header>
+      <main className="main">{children}</main>
+      <footer className="footer">© 2026</footer>
+    </div>
+  );
+}
+
+
+8.Build component tree for the Hospital UI:-
+import React from "react";
+function Header() {
+  return <header style={styles.header}>Hospital System</header>;
+}
+function Sidebar() {
+  return (
+    <aside style={styles.sidebar}>
+      <p><b>Date:19-02-2026</b></p>
+      <br></br>
+      <p>Dashboard</p>
+      <p>Patients</p>
+      <p>Doctors</p>
+    </aside>
+  );
+}
+function Layout({ children }) {
+  return (
+    <div style={styles.layout}>
+      <Header />
+      <div style={styles.content}>
+        <Sidebar />
+        <main style={styles.main}>{children}</main>
+      </div>
+    </div>
+  );
+}
+function StatsCard({ title, value }) /* Dashboard */
+{
+  return (
+    <div style={styles.card}>
+      <h4>{title}</h4>
+      <p>{value}</p>
+    </div>
+  );
+}
+function AppointmentList() {
+  return (
+    <div style={styles.card}>
+      <h4>Today's Appointments</h4>
+      <ul>
+        <li>Gayatri Wasulkar - 10:00 AM</li>
+        <li>Vaishnavi biradar - 11:30 AM</li>
+        <li>Shantanu hargane -  12:30 AM</li>
+      </ul>
+    </div>
+  );
+}
+function DashboardPage() {
+  return (
+    <>
+      <StatsCard title="Total Patients" value="100" />
+      <StatsCard title="Total Doctors" value="15" />
+      <AppointmentList />
+    </>
+  );
+}
+export default function App()      /* Main App */
+{
+  return (
+    <Layout>
+      <DashboardPage />
+    </Layout>
+  );
+}
+
+-Style part
+const styles = {
+  layout: { fontFamily: "Arial" },
+  header: {
+    background: "#a3179c",
+    color: "white",
+    padding: "15px",
+    textAlign: "center",
+  },
+  content: { display: "flex" },
+  sidebar: {
+    width: "200px",
+    background: "#f1f1f1",
+    padding: "15px",
+  },
+  main: { flex: 1, padding: "20px" },
+  card: {
+    background: "white",
+    padding: "15px",
+    marginBottom: "15px",
+    borderRadius: "6px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+  },
+};
+
+
+9.Pass dynamic props and test rendering behavior:-
+App.js
+import React from "react";
+function UserProfile({ name, age, isMember }) {
+  return (
+    <div>
+      <h1>Hello, {name}</h1>
+      <p>Age: {age}</p>
+      <p>
+        Membership Status: {isMember ? "Premium Member" : "Free User"}
+      </p>
+    </div>
+  );
+}
+export default function App() {
+  return (
+    <UserProfile 
+      name="Alice" 
+      age={28} 
+      isMember={true} 
+    />
+  );
+}
+
+test.js
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import App from "./App";
+
+describe("Rendering Behavior Tests", () => {
+
+  test("renders correct name", () => {
+    render(<App />);
+    expect(screen.getByText("Hello, Alice")).toBeInTheDocument();
+  });
+
+  test("renders correct age", () => {
+    render(<App />);
+    expect(screen.getByText("Age: 28")).toBeInTheDocument();
+  });
+
+  test("renders Premium Member when isMember is true", () => {
+    render(<App />);
+    expect(
+      screen.getByText("Membership Status: Premium Member")
+    ).toBeInTheDocument();
+  });
+
+});
+
