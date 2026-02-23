@@ -1,0 +1,217 @@
+1.useEffect deep dive: deps array behavior:-
+React’s useEffect hook is a powerful tool for handling side effects in functional components—such as data fetching, subscriptions, or manually updating the DOM. 
+However, its behavior is tightly linked to its dependency array, a often-misunderstood feature that controls when the effect runs. Mismanaging this array can lead to frustrating 
+issues like infinite re-render loops, stale data, or unnecessary side effects.
+In this blog, we’ll demystify the useEffect dependency array, explore why infinite loops occur, and learn how to safely dispatch actions (e.g., Redux, Context API) when dependencies 
+change. Whether you’re a beginner or an experienced React developer, this guide will help you write cleaner, more predictable effects.
+
+2.Cleanup functions and memory leaks:-
+-A cleanup function is simply a function that you return from inside your useEffect hook. React executes this function automatically at specific moments to undo or clean up the work your effect did.
+The cleanup function is an optional return function within a useEffect hook. React calls this function when the component unmounts or before running the effect again due to a change in dependencies. 
+It helps prevent memory leaks and other issues by cleaning up any side effects created by the effect.
+
+-Memory leaks in React often occur when side effects are not properly cleaned up inside the useEffect hook. This happens with timers, subscriptions, event listeners, or async requests 
+that remain active even after a component unmounts. Over time, these leaks degrade performance and cause UI issues. This guide explains why leaks occur, how to prevent them, 
+and best practices for cleanup in React functional components.
+
+3.useCallback and useMemo optimization:-
+In React applications, optimizing performance is crucial for ensuring smooth user experiences, especially in components with complex computations or frequent re-renders. 
+Two hooks provided by React, useMemo, and useCallback, offer efficient ways to achieve performance improvements by memoizing values and callback functions, respectively.
+-example of useMemo hook:-
+import React, { useMemo } from 'react';
+const MyComponent = ({ list }) => {
+  const filteredList = useMemo(() => {
+    return list.filter(item => item.value > 10);
+  }, [list]);
+  return (
+    <ul>
+      {filteredList.map(item => (
+        <li key={item.id}>{item.name}</li>
+      ))}
+    </ul>
+  );
+};
+
+-example of useCallback hook:-
+import React, { useCallback } from 'react';
+const Button = ({ onClick, label }) => {
+  return <button onClick={onClick}>{label}</button>;
+};
+const MyComponent = () => {
+  const handleClick = useCallback(() => {
+    console.log('Button clicked!');
+  }, []);
+
+  return <Button onClick={handleClick} label="Click me" />;
+};
+export default MyComponent;
+
+
+4.useRef usage for DOM & persistent values:-
+React’s rendering system is powerful, but sometimes, you need to store values that don’t trigger re-renders—like tracking a timer ID or referencing a DOM element. That’s where the useRef Hook shines.
+The useRef Hook is often overlooked but extremely handy for scenarios where:
+-You need to directly interact with a DOM element.
+-You want to persist values between renders without causing a re-render.
+-You need to avoid using useState for non-UI-related values.
+Think of useRef as a box that holds a mutable value. You can change the value inside without causing your component to re-render.
+-You can use useRef to reference a DOM node, similar to document.getElementById
+import React, { useRef, useEffect } from 'react';
+function FocusInput() {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current.focus(); // Focus the input on mount
+  }, []);
+
+  return <input ref={inputRef} placeholder="Type here..." />;
+}
+
+-useRef can store any value that persists across renders but doesn’t affect the UI
+function TimerTracker() {
+  const count = useRef(0);
+  const handleClick = () => {
+    count.current++;
+    console.log(`Clicked ${count.current} times`);
+  };
+  return <button onClick={handleClick}>Click Me</button>;
+}
+
+5.Custom hooks design patterns:-
+Design patterns are vital tools for building robust, maintainable, and scalable applications. In the React ecosystem, understanding and effectively utilizing design patterns can 
+significantly enhance your development workflow. One such powerful design pattern is Custom Hooks. This article delves into the Custom Hooks pattern, providing you with the knowledge 
+to create reusable logic in your React applications.
+
+6.Build custom hook useFetch:-
+import "./App.css";
+import useFetch from "./useFetch.js";
+
+function App() {
+  const {data, loading, error}= useFetch();
+  return (
+    <div className="App">
+      <h1>Custom React Hook(Data Fetching)</h1>
+      {loading && <h3>loading....</h3>}
+      {error && <h3>Error: Something went wrong</h3>}
+      {data.length}
+    </div>
+  );
+}
+export default App;
+
+function useFetch(){
+    return{
+        data:[],
+        loading: true,
+        error: null,
+        
+    };
+}
+export default useFetch;
+
+
+7.Optimize re-renders using memo/callback:-
+import React, { useState, useCallback } from "react";
+import Child from "./components/Child";
+import { Child } from "./components";
+import {card} from "./components";
+
+export default function App() {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState("");
+
+  const handleClick = () => {
+    setCount(count + 1);
+  };
+
+  return (
+    <div>
+      <h2>Count: {count}</h2>
+
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Type something"
+      />
+
+      <Child onClick={handleClick} />
+    </div>
+  );
+}
+//index.js
+export { default as Child } from "./Child";
+
+export { default as Card } from "./card";
+//child.js
+import React, { useState, useCallback } from "react";
+import Child from "./components/Child";
+
+
+function Child({ onClick }) {
+  console.log("Child rendered");
+  return (
+    <div>
+      <button onClick={onClick}>Increase</button>
+    </div>
+  );
+}
+
+export default Child;
+//card.js
+import React, { useState, useCallback } from "react";
+import Card from "./components/card";
+
+const Card = React.memo(({ title, onClick }) => {
+  console.log(`${title} rendered`);
+  return (
+    <div style={{
+      border: "1px solid #ccc",
+      padding: "16px",
+      margin: "8px",
+      borderRadius: "8px",
+      width: "200px"
+    }}>
+      <h3>{title}</h3>
+      <button onClick={onClick}>Click Me</button>
+    </div>
+  );
+});
+
+export default Card;
+
+
+8.Debug infinite loop in useEffect:-
+App.js
+import React from "react";
+import Counter from "./Counter";
+
+function App() {
+  return (
+    <div>
+      <h1>Example of useEffect</h1>
+      <Counter />
+    </div>
+  );
+}
+export default App;
+
+Counter.js
+import React, { useState, useEffect } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    console.log("Effect runs only once");
+    setCount(prev => prev + 1);
+  }, []); 
+
+  return (
+    <div>
+      <h2>Count: {count}</h2>
+    </div>
+  );
+}
+
+export default Counter;
+
+export default MyComponent;
