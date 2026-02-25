@@ -1,0 +1,347 @@
+1.Provider and Consumer:-
+-The Provider is a component provided by React that allows its child components to subscribe to a certain context. It accepts a value prop which is the data that will be shared with 
+all components that are consumers of that context.
+Typically, you wrap the top-level component of your application with a Provider component, thus making the context available to all its descendants.
+example:-
+// Context creation
+const MyContext = React.createContext();
+// Top-level Provider
+const App = () => {
+    return (
+        <MyContext.Provider value={"Hello"}>
+            <ChildComponent />
+        </MyContext.Provider>
+    );
+};
+-The Consumer is a component that allows components to subscribe to a context. It lets you access the context value and use it within your component's render function.
+Consumers can be nested within each other to access multiple contexts if needed.
+example:-
+// Consuming context
+const ChildComponent = () => {
+    return (
+        <MyContext.Consumer>
+            {value => <div>{value}</div>}
+        </MyContext.Consumer>
+    );
+};
+
+2.Prop drilling problem & solution:-
+-Problem
+1.Increased Complexity: 
+As the number of components in the tree grows, managing props through multiple levels adds complexity and makes the code harder to understand.
+2.Unnecessary Coupling: 
+Intermediary components that don’t need the data become tightly coupled to the parent and child components. This violates the principle of single responsibility.
+3.Reduced Reusability: 
+Components that depend on specific props are harder to reuse in other parts of the application.
+4.Maintenance Challenges: 
+When you need to add, remove, or modify props, you must update every component in the chain, increasing the risk of errors.
+5.Performance Issues: 
+Excessive prop drilling can lead to unnecessary re-renders of intermediate components, which can degrade performance in larger applications.
+-Solution
+The Context API allows you to share state globally, avoiding the need to pass props manually through each component.
+While prop drilling is a natural part of React’s design, there are several ways to mitigate its challenges. Let’s explore some strategies.
+
+3.React Reducer pattern:-
+The Reducer pattern in React is a state management approach based on the reducer concept from functional programming. It’s especially useful when:
+-State logic is complex
+-Multiple state values depend on each other
+-State transitions need to be predictable
+-You want Redux-like structure without Redux
+In React, this pattern is implemented using the built-in useReducer hook.
+
+4.Global state design:-
+Global state design is the architecture of shared application data and how it is structured and updated across the entire app.
+Global state design is the way you plan, structure, and manage data that must be shared across multiple parts of an application.
+Need Global State Design:-
+-Navbar needs the logged-in user
+-Profile page needs the logged-in user
+-Settings page needs the logged-in user
+Without global state, you would pass it through many components (called prop drilling).
+Global state design solves this by creating a central source of truth.
+
+5.Combining Context + Reducer for scalability:-
+Reducers let you consolidate a component’s state update logic. Context lets you pass information deep down to other components. You can combine reducers and context together 
+to manage state of a complex screen.
+Combining Context + Reducer is a pattern used in React to build a scalable, predictable global state system without external libraries.
+Centralized state logic (Reducer)
+Global access (Context)
+Predictable updates
+Modular architecture
+Context + Reducer:-
+Reducer → handles state logic
+Context → exposes state globally
+Clean and scalable architecture
+
+6.Build global AuthContext:-
+//App.js
+import { AuthProvider } from './Contexts/AuthContext';
+import Dashboard from './Components/Dashboard';
+function App(){
+  return(
+    <AuthProvider>
+      <Dashboard></Dashboard>
+    </AuthProvider>
+  );
+}
+export default App;
+//Context/AuthContext.js
+import React, {useState, useEffect, useContext} from "react";
+
+export const AuthContext = createContext(null);
+
+export function useAuth(){
+    return useContext(AuthContext);
+}
+
+export function AuthContext(props){
+    const[authUser, setAuthUser]= useState(null)
+    const[isLoggedIn, setIsLoggedIn]= useState(false)
+
+    useEffect(()=>{
+        const subscribe = AuthService.subscribe((user)=>{
+            if(user){
+                setIsLoggedIn(true)
+                setAuthUser(user)
+            }
+            else{
+                setIsLoggedIn(false)
+                setAuthUser(null)
+            }
+        })
+
+        return subscribe
+    })
+
+    const value={
+        authUser,
+        setAuthUser,
+        isLoggedIn,
+        setIsLoggedIn
+    }
+
+    return(
+        <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>
+    )
+}
+//Components/Dashboard.jsx
+import React from 'react'
+import { AuthContext } from '../Contexts/AuthContext'
+
+const Dashboard=() =>{
+    const{ authUser,
+        setAuthUser,
+        isLoggedIn,
+        setIsLoggedIn}= useAuth()
+
+        const logIn=(e)=>{
+            e.preventDefault()
+            setIsLoggedIn(true)
+            setAuthUser({
+                Name: "Gayatri Wasulkar"
+            })
+        }
+        const logOut=(e)=>{
+            e.preventDefault()
+            setIsLoggedIn(false)
+            setAuthUser(null)
+        }
+
+  return (
+    <>
+        <span>User is currently: {isLoggedIn? 'Logged-In' : 'Logged out'}.</span><br/>
+        {isLoggedIn? (<span>User name: {authUser.Name}</span>) : null}
+        <br/>
+        {isLoggedIn ?
+        <button onClick={(e)=>{logOut(e)}}>Log Out</button>
+      : <button onClick={(e)=>{logIn(e)}}>Log In</button>}
+        
+    </>
+  )
+}
+
+export default Dashboard
+
+7.Integrate user session management:-
+//App.js
+import React, { useState, useEffect } from 'react';
+import SessionManager from './SessionManager';
+
+function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('user');
+    if (storedUser) setUser(storedUser);
+  }, []);
+
+  return (
+    <div>
+      <SessionManager user={user} setUser={setUser} />
+    </div>
+  );
+}
+
+export default App;
+//index.js
+import React from 'react';
+import {ReactDOM} from 'react-dom/client';
+import {App} from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+//SessionManager.js
+import React, { useState } from 'react';
+
+function SessionManager({ user, setUser }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username === 'Gayatri' && password === '1234') {
+      sessionStorage.setItem('user', username);
+      setUser(username);
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('user');
+    setUser(null);
+  };
+
+  if (user) {
+    return (
+      <div>
+        <h2>Welcome, {user}!</h2>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleLogin}>
+      <input
+        placeholder="Username"
+        value={username}
+        onChange={e => setUsername(e.target.value)}
+      />
+      <br />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+      />
+      <br />
+      <button type="submit">Login</button>
+    </form>
+  );
+}
+
+export default SessionManager;
+
+8.Use Reducer for login/logout handling:-
+//App.js
+import React, { useReducer, useEffect } from 'react';
+import SessionManager from './SessionManager';
+
+const initialState = {
+  user: null
+};
+
+function authReducer(state, action) {
+  switch (action.type) {
+    case 'LOGIN':
+      sessionStorage.setItem('user', action.payload);
+      return { user: action.payload };
+
+    case 'LOGOUT':
+      sessionStorage.removeItem('user');
+      return { user: null };
+
+    case 'RESTORE_SESSION':
+      return { user: action.payload };
+
+    default:
+      return state;
+  }
+}
+
+function App() {
+  const [state, dispatch] = useReducer(authReducer, initialState);
+
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('user');
+    if (storedUser) {
+      dispatch({ type: 'RESTORE_SESSION', payload: storedUser });
+    }
+  }, []);
+
+  return (
+    <div>
+      <SessionManager user={state.user} dispatch={dispatch} />
+    </div>
+  );
+}
+
+export default App;
+//SessionManager.js
+import React, { useState } from 'react';
+
+function SessionManager({ user, dispatch }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    if (username === 'Gayatri' && password === '1234') {
+      dispatch({ type: 'LOGIN', payload: username });
+    } else {
+      setError('Invalid username or password');
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+  };
+
+  if (user) {
+    return (
+      <div>
+        <h2>Welcome, {user}!</h2>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1>App User Login Required</h1>
+      <br></br>
+      <h2>User Login</h2>
+      {error && <p style={{ color: 'blue' }}>{error}</p>}
+      <form onSubmit={handleLogin}>
+        <input
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <br />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <br />
+        <button type="submit">Login Now</button>
+      </form>
+    </div>
+  );
+}
+
+export default SessionManager;
