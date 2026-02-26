@@ -1,0 +1,329 @@
+1.Reusable component patterns:-
+Reusable components are at the heart of modern frontend scalability. By applying design patterns such as Container-Presenter, Compound Components, or 
+Render Props, and adhering to best practices like type safety and separation of concerns, teams can build resilient and extensible frontend architectures.
+Reusable components are self-contained, composable UI elements that encapsulate logic, styles, and behavior.
+1. Container-Presenter Pattern
+Purpose: Separate business logic (container) from rendering logic (presenter).
+2. Compound Component Pattern
+Purpose: Allow a parent component to coordinate behavior among its child components.
+3. Render Props Pattern
+Purpose: Share code between components using a function as a child.
+4. Higher-Order Components (HOC)
+Purpose: Add behavior to components by wrapping them.
+5. Controlled vs Uncontrolled Components
+Controlled Components: State is controlled externally (via props). Uncontrolled Components: State is managed internally.
+
+2.Higher-Order Components (HOC):-
+Higher-order components (HOC) are an advanced technique in React that is used for reusing component logic. It is the function that takes the original component and returns the new enhanced component.
+It doesn’t modify the input component directly. Instead, they return a new component with enhanced behavior.
+They allow you to reuse component logic across multiple components without duplicating it.
+They are pure functions that accept a component and return a new component.
+example:-
+//App.js
+import React from "react";
+import "./App.css";
+import withName from './Components/Name';
+const App = (props) => {
+  return <h1>{props.name}</h1>;
+};
+
+const EnhancedComponent = withName(App);
+//Name.js
+import React from 'react';
+const withName = (OriginalComponent) => {
+  const NewComponent = (props) => {
+    return <OriginalComponent {...props} name="Hello World" />;
+  };
+  return NewComponent;
+};
+export default withName;
+
+3.Render props pattern:-
+Render Props is a React pattern that allows components to share logic by passing a function as a prop. The receiving component calls this function to render content dynamically, 
+enabling code reuse while keeping the UI flexible.
+Render Props was a popular pattern in React for sharing reusable logic, it is now less common in modern React development. In many cases, Custom Hooks have replaced Render Props due 
+to their simplicity and improved readability.
+Render Props provides several advantages:
+-Code Reusability: Instead of duplicating logic across components, you can encapsulate it in one place and use a render function to dictate how the UI looks.
+-Separation of Concerns: It separates business logic from UI components, making the codebase cleaner and more maintainable.
+-Greater Flexibility: Unlike Higher-Order Components (HOCs), Render Props allow you to customize the way components are rendered dynamically.
+
+4.Compound component architecture:-
+Component-Based Architecture (CBA) in system design refers to a methodology where software is built by assembling pre-defined, reusable components. Each component encapsulates a specific piece of 
+functionality or behavior, with well-defined interfaces that govern how components interact with each other. This approach promotes modularity, flexibility, and reusability in software development.
+-By separating concerns into distinct components, CBA enables easier maintenance, scalability, and collaboration among developers.
+-It's particularly beneficial in large-scale applications where different parts of the system need to be developed, tested, and updated independently while ensuring consistency and 
+efficiency across the entire software ecosystem.
+
+5.Controlled/uncontrolled component design:-
+-A controlled component in React is an element whose state is controlled by React itself. This means that the component's state is stored in a React component's state and can only be updated by 
+triggering a state change via React’s setState() method.
+-Features of Controlled
+State Management: Form data is handled by the component's state using React's useState hook or this.state in class components.
+Data Flow: The input elements' values are set by the state, and any changes are reflected through state updates.
+Predictability: Since the state is managed by React, the component's behavior is predictable and consistent.
+Real-Time Validation: Enables immediate validation and formatting of user input.
+Single Source of Truth: The state serves as the single source of truth for the form data.
+
+-An uncontrolled component in React refers to a component where the form element's state is not directly controlled by React. Instead, the form element itself maintains its own state, 
+and React only interacts with the element indirectly through references (refs).
+-Features of Uncontrolled Components
+DOM-Managed State: Form data is handled by the DOM itself, not by React state.
+Use of Refs: Access to form values is achieved using React's useRef() or createRef() to reference DOM elements directly.
+No State Management: Eliminates the need for state variables and event handlers for each input field.
+Simpler Implementation: Suitable for simple forms or when integrating with non-React libraries that manipulate the DOM directly.
+Less Predictable: Since the component's state is not synchronized with React, it can lead to less predictable behavior.
+Manual Validation: Validation and formatting need to be handled manually, often during form submission.
+
+6.Build a reusable Modal system:-
+//App.jsx
+import React, { useState } from "react";
+import { Modal } from "./components/Modal";
+
+export default function App() {
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState(null);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <button onClick={() => setOpen(true)}>Open Modal App</button>
+
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <h2>Upload Your File</h2>
+        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+        {file && <p>Selected: {file.name}</p>}
+        <div style={{ marginTop: 10 }}>
+          <button onClick={() => setOpen(false)}>Cancel</button>
+          <button
+            onClick={() => {
+              if (file) alert(`Uploaded: ${file.name}`);
+            }}
+          >
+            Upload
+          </button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+//Modal.jsx
+import React from "react";
+import "./Modal.css";
+
+export function Modal({ open, onClose, children }) {
+  if (!open) return null;
+
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal-content">
+        {children}
+      </div>
+    </div>
+  );
+}
+//Modal.css
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(221, 78, 78, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #151515;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+}
+
+7.Refactor form input into compound components:-
+//App.jsx
+import React, { useState } from "react";
+import  Input  from "./components/Input/Input";
+
+export default function App() {
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name) setError("Name is required");
+    else setError("");
+  };
+
+  return (
+    <form className="form-container">
+    <form onSubmit={handleSubmit} style={{ maxWidth: 300, margin:5 }}>
+      <Input id="name" value={name} onChange={(e) => setName(e.target.value)}>
+      <h2>Registration Form</h2>
+        <Input.Label>Name: </Input.Label>
+        <Input.Field placeholder="Enter your name" />
+        {error && <Input.Error>{error}</Input.Error>}
+      </Input>
+
+      <button type="submit" style={{ padding: "8px 16px", marginTop:8  }}>
+        <onclick>Submit</onclick>
+      </button>
+    </form>
+    </form>
+  );
+}
+//components/Input/Input.jsx
+import React, { createContext, useContext } from "react";
+import  "./Input.css";
+
+const InputContext = createContext();
+
+function Input({ children, ...props }) {
+  return (
+    <div className="input-wrapper">
+      <InputContext.Provider value={props}>{children}</InputContext.Provider>
+    </div>
+  );
+}
+
+Input.Label = function Label({ children }) {
+  const { id } = useContext(InputContext);
+  return (
+    <label htmlFor={id} className="input-label">
+      {children}
+    </label>
+  );
+};
+
+Input.Field = function Field(props) {
+  const context = useContext(InputContext);
+  return <input {...context} {...props} className="input-field" />;
+};
+
+Input.Error = function Error({ children }) {
+  return <p className="input-error">{children}</p>;
+};
+
+export default Input;
+//components/Input/Input.css
+.form-container {
+  background-color:brown; 
+  align-content: center;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: 40px auto;          
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+.input-wrapper {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-label {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.input-field {
+  padding: 8px;
+  border: 1px solid #100f0f;
+  border-radius: 4px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #dddde1;
+}
+
+.input-error {
+  color: rgb(9, 8, 17);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+8.Implement toggle component using render props:-
+//App.jsx
+import React from "react";
+import Toggle from "./Toggle";
+
+function App() {
+  return (
+    <div style={{ padding: "40px" }}>
+      <h2><u>*Status Check Mute✅ Or Unmute❌ Toggle*</u></h2>
+
+      <Toggle initial={false}>
+        {({ isOn, toggle }) => (
+          <div>
+          <br/>
+            <p>Check Toggle Status : {isOn ? "MUTE" : "UNMUTE"}</p>
+            <button onClick={toggle}>
+            <br/>
+              {isOn ? "Mute Status" : "Unmute Status"}
+            </button>
+          </div>
+        )}
+      </Toggle>
+
+    </div>
+  );
+}
+
+export default App;
+//Toggle.jsx
+import React, { useState } from "react";
+
+function Toggle({ children, initial = false }) {
+  const [isOn, setIsOn] = useState(initial);
+
+  const toggle = () => setIsOn(prev => !prev);
+
+  return children({
+    isOn,
+    toggle,
+  });
+}
+
+export default Toggle;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export default EnhancedComponent;
